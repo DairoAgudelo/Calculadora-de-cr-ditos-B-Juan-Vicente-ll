@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from datetime import date
+import datetime
 import io
 
 # ---- CONFIGURACIÓN INICIAL ----
@@ -12,7 +12,7 @@ st.subheader("Datos del cliente")
 cliente = st.text_input("Nombre del cliente")
 asesor = st.text_input("Nombre del asesor")
 proyecto = st.text_input("Nombre del proyecto")
-fecha = st.date_input("Fecha", value=date.today())
+fecha = st.date_input("Fecha", value=datetime.date.today())
 
 # ---- PARÁMETROS DEL CRÉDITO ----
 st.subheader("Parámetros del crédito")
