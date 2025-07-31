@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
-from fpdf import FPDF
 from datetime import date
+import io
 
 # ---- CONFIGURACIÓN INICIAL ----
 st.set_page_config(page_title="Calculadora de Créditos Hipotecarios - Argentina", layout="centered")
@@ -42,21 +42,19 @@ creditos["Cuota estimada ($)"] = (saldo_credito * (1 + (creditos["Tasa Anual (%)
 st.subheader("Comparación de Créditos")
 st.dataframe(creditos.sort_values(by="Cuota estimada ($)"))
 
-# ---- GENERAR PDF ----
-def generar_pdf():
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", size=12)
-    pdf.cell(200, 10, txt="Informe Comparativo de Créditos Hipotecarios", ln=1, align="C")
-    pdf.cell(200, 10, txt=f"Cliente: {cliente} | Asesor: {asesor} | Proyecto: {proyecto}", ln=2)
-    pdf.cell(200, 10, txt=f"Fecha: {fecha.strftime('%d/%m/%Y')}", ln=3)
-    pdf.ln(10)
+# ---- GENERAR INFORME DE TEXTO ----
+def generar_texto():
+    lines = []
+    lines.append("INFORME COMPARATIVO DE CRÉDITOS HIPOTECARIOS\n")
+    lines.append(f"Cliente: {cliente} | Asesor: {asesor} | Proyecto: {proyecto}\n")
+    lines.append(f"Fecha: {fecha.strftime('%d/%m/%Y')}\n\n")
     for i, row in creditos.iterrows():
-        pdf.cell(200, 10, txt=f"Banco: {row['Banco']} | Tipo: {row['Tipo']} | Cuota: ${row['Cuota estimada ($)']:.2f}", ln=1)
-    return pdf
+        lines.append(f"Banco: {row['Banco']} | Tipo: {row['Tipo']} | Cuota estimada: ${row['Cuota estimada ($)']:.2f}\n")
+    return "".join(lines)
 
-if st.button("📄 Descargar informe PDF"):
-    pdf = generar_pdf()
-    pdf.output("informe_credito.pdf")
-    with open("informe_credito.pdf", "rb") as f:
-        st.download_button("Descargar PDF", data=f, file_name="informe_credito.pdf")
+if st.button("📄 Descargar informe como TXT"):
+    informe = generar_texto()
+    buffer = io.BytesIO()
+    buffer.write(informe.encode())
+    buffer.seek(0)
+    st.download_button("Descargar Informe", data=buffer, file_name="informe_credito.txt", mime="text/plain")
